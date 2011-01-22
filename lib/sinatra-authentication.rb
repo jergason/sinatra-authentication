@@ -83,16 +83,17 @@ module Sinatra
       end
 
       app.post '/signup' do
+        redirect '/' unless current_user.admin?
         @user = User.set(params[:user])
         if @user.valid && @user.id
-          session[:user] = @user.id
+          #session[:user] = @user.id
           if Rack.const_defined?('Flash')
             flash[:notice] = "Account created."
           end
           redirect '/'
         else
           if Rack.const_defined?('Flash')
-            flash[:notice] = "There were some problems creating your account: #{@user.errors}."
+            flash[:notice] = "There were some problems creating the account: #{@user.errors}."
           end
           redirect '/signup?' + hash_to_query_string(params['user'])
         end

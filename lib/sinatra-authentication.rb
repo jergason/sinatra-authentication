@@ -205,7 +205,6 @@ module Sinatra
         logout_parameters.delete(:rel)
         result += "<a href='/users/#{current_user.id}/edit' class='#{css_classes} sinatra-authentication-edit' #{parameters}>Edit account</a> "
         result += "<a href='/logout' class='#{css_classes} sinatra-authentication-logout' #{logout_parameters}>Logout</a>"
-        end
       else
         result += "<a href='/signup' class='#{css_classes} sinatra-authentication-signup' #{parameters}>Signup</a> "
         result += "<a href='/login' class='#{css_classes} sinatra-authentication-login' #{parameters}>Login</a>"

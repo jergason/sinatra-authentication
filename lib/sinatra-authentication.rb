@@ -5,12 +5,6 @@ require Pathname(__FILE__).dirname.expand_path + "models/abstract_user"
 module Sinatra
   module SinatraAuthentication
     def self.registered(app)
-      #INVESTIGATE
-      #the possibility of sinatra having an array of view_paths to load from
-      #PROBLEM
-      #sinatra 9.1.1 doesn't have multiple view capability anywhere
-      #so to get around I have to do it totally manually by
-      #loading the view from this path into a string and rendering it
       app.set :sinatra_authentication_view_path, Pathname(__FILE__).dirname.expand_path + "views/"
 
       app.get '/users' do
@@ -150,39 +144,6 @@ module Sinatra
         end
         redirect '/'
       end
-
-
-      if Sinatra.const_defined?('FacebookObject')
-        app.get '/connect' do
-          if fb[:user]
-            if current_user.class != GuestUser
-              user = current_user
-            else
-              user = User.get(:fb_uid => fb[:user])
-            end
-
-            if user
-              if !user.fb_uid || user.fb_uid != fb[:user]
-                user.update :fb_uid => fb[:user]
-              end
-              session[:user] = user.id
-            else
-              user = User.set!(:fb_uid => fb[:user])
-              session[:user] = user.id
-            end
-          end
-          redirect '/'
-        end
-
-        app.get '/receiver' do
-          %[<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-            <html xmlns="http://www.w3.org/1999/xhtml" >
-              <body>
-                <script src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/XdCommReceiver.js" type="text/javascript"></script>
-              </body>
-            </html>]
-        end
-      end
     end
   end
 
@@ -242,14 +203,7 @@ module Sinatra
         # a tad janky?
         logout_parameters.delete(:rel)
         result += "<a href='/users/#{current_user.id}/edit' class='#{css_classes} sinatra-authentication-edit' #{parameters}>Edit account</a> "
-        if Sinatra.const_defined?('FacebookObject')
-          if fb[:user]
-            result += "<a href='javascript:FB.Connect.logoutAndRedirect(\"/logout\");' class='#{css_classes} sinatra-authentication-logout' #{logout_parameters}>Logout</a>"
-          else
-            result += "<a href='/logout' class='#{css_classes} sinatra-authentication-logout' #{logout_parameters}>Logout</a>"
-          end
-        else
-          result += "<a href='/logout' class='#{css_classes} sinatra-authentication-logout' #{logout_parameters}>Logout</a>"
+        result += "<a href='/logout' class='#{css_classes} sinatra-authentication-logout' #{logout_parameters}>Logout</a>"
         end
       else
         result += "<a href='/signup' class='#{css_classes} sinatra-authentication-signup' #{parameters}>Signup</a> "
@@ -257,28 +211,6 @@ module Sinatra
       end
 
       result += "</div>"
-    end
-
-    if Sinatra.const_defined?('FacebookObject')
-      def render_facebook_connect_link(text = 'Login using facebook', options = {:size => 'small'})
-          if options[:size] == 'small'
-            size = 'Small'
-          elsif options[:size] == 'medium'
-            size = 'Medium'
-          elsif options[:size] == 'large'
-            size = 'Large'
-          elsif options[:size] == 'xlarge'
-            size = 'BigPun'
-          else
-            size = 'Small'
-          end
-
-          %[<a href="#" onclick="FB.Connect.requireSession(function(){document.location = '/connect';}); return false;" class="fbconnect_login_button FBConnectButton FBConnectButton_#{size}">
-              <span id="RES_ID_fb_login_text" class="FBConnectButton_Text">
-                #{text}
-              </span>
-            </a>]
-      end
     end
   end
 

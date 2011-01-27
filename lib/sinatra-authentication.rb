@@ -46,7 +46,6 @@ module Sinatra
       app.post '/login' do
         if user = User.authenticate(params[:email], params[:password])
           session[:user] = user.id
-
           if Rack.const_defined?('Flash')
             flash[:notice] = "Login successful."
           end
